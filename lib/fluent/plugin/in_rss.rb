@@ -7,7 +7,7 @@ module Fluent
     config_param :tag, :string
     config_param :url, :string
     config_param :interval, :time, default: '5m'
-    config_param :attrs, :string, default: 'about, date, title, description, link, content_encoded'
+    config_param :attrs, :string, default: 'date, title, description'
 
     def configure(conf)
       super
