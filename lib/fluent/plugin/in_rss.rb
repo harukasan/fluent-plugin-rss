@@ -32,20 +32,24 @@ module Fluent
     end
 
     def emit_rss
-      next_current_time = @current_time
-      rss = RSS::Parser.parse(@url)
-      rss.items.each do |item|
-        record = {}
-        @attrs.each do |attr|
-          record[attr] = item.send(attr) if item.send(attr)
+      begin
+        next_current_time = @current_time
+        rss = RSS::Parser.parse(@url)
+        rss.items.each do |item|
+          record = {}
+          @attrs.each do |attr|
+            record[attr] = item.send(attr) if item.send(attr)
+          end
+          time = Time.parse item.date.to_s
+          if time > @current_time
+            Fluent::Engine.emit @tag, Time.parse(item.date.to_s), record
+            next_current_time = time if time > next_current_time
+          end
         end
-        time = Time.parse item.date.to_s
-        if time > @current_time
-          Fluent::Engine.emit @tag, Time.parse(item.date.to_s), record
-          next_current_time = time if time > next_current_time
-        end
+        @current_time = next_current_time
+      rescue => e
+        log.error e
       end
-      @current_time = next_current_time
     end
   end
 end
