@@ -23,11 +23,13 @@ module Fluent
     end
 
     def start
+      super
       @thread = Thread.new(&method(:run))
     end
 
     def shutdown
       Thread.kill(@thread)
+      super
     end
 
     def run
