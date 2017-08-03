@@ -1,8 +1,14 @@
 require 'rss'
+require 'fluent/input'
 
 module Fluent
   class RSSInput < Fluent::Input
     Plugin.register_input 'rss', self
+
+    # Define `router` method of v0.12 to support v0.10 or earlier
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
 
     config_param :tag, :string
     config_param :url, :string
@@ -17,11 +23,13 @@ module Fluent
     end
 
     def start
+      super
       @thread = Thread.new(&method(:run))
     end
 
     def shutdown
       Thread.kill(@thread)
+      super
     end
 
     def run
@@ -42,7 +50,7 @@ module Fluent
           end
           time = Time.parse item.date.to_s
           if time > @current_time
-            Fluent::Engine.emit @tag, Time.parse(item.date.to_s), record
+            router.emit @tag, Time.parse(item.date.to_s), record
             next_current_time = time if time > next_current_time
           end
         end
