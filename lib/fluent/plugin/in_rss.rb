@@ -1,4 +1,5 @@
 require 'rss'
+require 'fluent/input'
 
 module Fluent
   class RSSInput < Fluent::Input
